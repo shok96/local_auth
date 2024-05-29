@@ -9,12 +9,16 @@
 // ignore_for_file: public_member_api_docs
 
 import 'dart:async';
+import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:local_auth_darwin/local_auth_darwin.dart';
 import 'package:local_auth_platform_interface/local_auth_platform_interface.dart';
 import 'package:local_auth_windows/local_auth_windows.dart';
+
+import '../local_auth.dart';
 
 /// A Flutter plugin for authenticating the user identity locally.
 class LocalAuthentication {
@@ -73,4 +77,30 @@ class LocalAuthentication {
   /// Returns a list of enrolled biometrics.
   Future<List<BiometricType>> getAvailableBiometrics() =>
       LocalAuthPlatform.instance.getEnrolledBiometrics();
+
+  Future<BiometricOS> getBiometricOS() async {
+
+    if(Platform.isAndroid){
+      return BiometricAndroid();
+    }
+    else if(Platform.isIOS){
+      final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+
+      if(faceIdMachine.contains(iosInfo.utsname.machine)){
+        return BiometricIos(
+          biometricIosType: IosFaceID()
+        );
+      }
+      else if(touchIdMachine.contains(iosInfo.utsname.machine)){
+        return BiometricIos(
+            biometricIosType: IosTouchID()
+        );
+      }
+      return BiometricIos(
+          biometricIosType: IosUnknown()
+      );
+    }
+    return BiometricUnknown();
+  }
 }

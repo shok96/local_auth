@@ -32,6 +32,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    auth.getBiometricOS().then((value) => print(value is BiometricIos ? value.biometricIosType : value));
     auth.isDeviceSupported().then(
           (bool isSupported) => setState(() => _supportState = isSupported
               ? _SupportState.supported
